@@ -147,8 +147,8 @@ class four_way_heap{
 	}
 
 	heap_element get_min(){
-		heap_element mi = arr[0];
-		arr[0] = arr.back();
+		heap_element mi = arr[3];
+		arr[3] = arr.back();
 		arr.pop_back();
 		int idx = 3;
 		int minChild = 4*(idx - 2);
@@ -182,6 +182,7 @@ class four_way_heap{
 
 
 class pairing_heap_node{
+public:
 	vector< pairing_heap_node* > arr;
 	heap_element elem;
 };
@@ -189,16 +190,74 @@ class pairing_heap_node{
 
 class pairing_heap{
 	pairing_heap_node* root;
+	int sz;
 public:
 	pairing_heap(){
 		root = NULL;
+		sz = 0;
 	}
-	void insert();
-	void get_min();
+
+	void insert(pairing_heap_node* newElem){
+		sz++;
+		if (root == NULL){
+			root = newElem;
+		}
+		else if (root->elem.freq < newElem->elem.freq)
+			root->arr.push_back(newElem);
+		else{
+			newElem->arr.push_back(root);
+			root = newElem;
+		}
+	}
+
+	heap_element get_min(){
+		sz--;
+		heap_element mi = root->elem;
+		vector<pairing_heap_node* >tmp;
+		for(int i=root->arr.size()-1; i>0; i=i-2){
+			if (root->arr[i]->elem.freq > root->arr[i-1]->elem.freq){
+				tmp.push_back(root->arr[i-1]);
+				root->arr[i-1]->arr.push_back(root->arr[i]);
+			}
+			else{
+				tmp.push_back(root->arr[i]);
+				root->arr[i]->arr.push_back(root->arr[i-1]);
+			}
+			root->arr.pop_back();
+			root->arr.pop_back();
+		}
+
+		if (root->arr.size() > 0){
+			tmp.push_back(root->arr.back());
+			root->arr.pop_back();
+		}
+
+		pairing_heap_node* tmpRoot = NULL;
+		if (tmp.size() > 0){
+			tmpRoot = tmp.back();
+			for(int i=tmp.size()-2; i>=0; i--){
+				if (tmp[i]->elem.freq > tmpRoot->elem.freq)
+					tmpRoot->arr.push_back(tmp[i]);
+				else{
+					tmp[i]->arr.push_back(tmpRoot);
+					tmpRoot = tmp[i];
+				}
+			}
+		}
+
+		delete(root);
+		root = tmpRoot;
+		return mi;
+	}
+
 	int size(){
-		return 0;
+		return sz;
 	}
-	void delete_heap();
+	void delete_heap(){
+		root->elem.tree->delete_tree();
+		delete(root);
+		root = NULL;
+	}
 };
 
 
@@ -248,7 +307,7 @@ void build_tree_using_4way_heap(){
 		heap.insert(elemOne);
 	}
 
-	while (heap.size() > 1){
+	while (heap.size() > 4){
 		elemOne = heap.get_min();
 		elemTwo = heap.get_min();
 		//cout<<elemOne.freq<<" "<<elemTwo.freq<<endl;
@@ -259,6 +318,42 @@ void build_tree_using_4way_heap(){
 
 	heap.delete_heap();
 }
+
+
+void build_tree_using_pairing_heap(){
+	pairing_heap heap;
+	heap_element elemOne, elemTwo;
+	pairing_heap_node* tmp;
+
+	for (int i=0;i<FREQ_TABLE_SIZE; i++){
+
+		if (freq_table[i] == 0)
+			continue;
+
+		elemOne.freq = freq_table[i];
+		elemOne.tree = new huffman_tree();
+		elemOne.tree->insert_root(new huffman_tree_node(i));
+		tmp = new pairing_heap_node();
+		tmp->elem = elemOne;
+		heap.insert(tmp);
+	}
+
+	//cout<<"Initialized tree"<<endl;
+	while (heap.size() > 1){
+		//cout<<heap.size()<<endl;
+		elemOne = heap.get_min();
+		elemTwo = heap.get_min();
+		//cout<<elemOne.freq<<" "<<elemTwo.freq<<endl;
+		elemOne.tree->combine(elemTwo.tree);
+		elemOne.freq += elemTwo.freq;
+		tmp = new pairing_heap_node();
+		tmp->elem = elemOne;
+		heap.insert(tmp);
+	}
+
+	heap.delete_heap();
+}
+
 
 
 void display_freq_table(int size){
@@ -277,18 +372,18 @@ int main(){
 	int var;
 	for(int i=0;i<FREQ_TABLE_SIZE;i++)
 		freq_table[i]=0;
-	f.open("/home/abhinav/ADS/Sample1/sample_input_small.txt");
+	f.open("/home/abhinav/ADS/Sample2/sample_input_large.txt");
 	while(f >> var){
 		freq_table[var]++;
 	}
-	display_freq_table(10);
+	//display_freq_table(10);
 	clock_t start_time;
 	// binary heap
 	start_time = clock();
 	for(int i = 0; i < 10; i++){
 		//run 10 times on given data set
 		//cout<<endl;
-		build_tree_using_binary_heap();
+		//build_tree_using_binary_heap();
 		//cout<<endl;
 	}
 	cout << "Time using binary heap (microsecond): " << (clock() - start_time)/10 << endl;
@@ -296,14 +391,14 @@ int main(){
 	start_time = clock();
 	for(int i = 0; i < 10; i++){
 		//run 10 times on given data set
-		build_tree_using_4way_heap();
+		//build_tree_using_4way_heap();
 	}
 	cout << "Time using 4-way heap (microsecond): " << (clock() - start_time)/10 << endl;
 	// pairing heap
 	start_time = clock();
 	for(int i = 0; i < 10; i++){
 		//run 10 times on given data set
-		//build_tree_using_pairing_heap();
+		build_tree_using_pairing_heap();
 	}
 	cout << "Time using pairing heap (microsecond): " << (clock() - start_time)/10 << endl;
 }
