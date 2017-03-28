@@ -227,12 +227,12 @@ void display_freq_table(int size){
 }
 
 
-void encodeText(string str){
+void encodeText(char* str){
 	ifstream f;
 	ofstream o;
 	int var;
 	int len=0, tmp=0;
-	f.open(str.c_str());
+	f.open(str);
 	o.open("encoded.bin", std::ios::binary);
 	while(f >> var){
 		for(int i=0; i<code_table[var].size(); i++){
