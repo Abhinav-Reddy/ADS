@@ -5,6 +5,7 @@ using namespace std;
 
 #define FREQ_TABLE_SIZE 1000000
 int freq_table[1000000];
+string code_table[1000000];
 
 
 class huffman_tree_node{
@@ -28,13 +29,20 @@ public:
 
 class huffman_tree{
 	huffman_tree_node* root;
+	int sz;
 public:
 	huffman_tree(){
 		root = NULL;
+		sz = 0;
+	}
+
+	huffman_tree_node* getRoot(){
+		return root;
 	}
 
 	void insert_root(huffman_tree_node* node){
 		root = node;
+		sz++;
 	}
 
 	void delete_subTree(huffman_tree_node* root){
@@ -55,9 +63,16 @@ public:
 		huffman_tree_node* newRoot = new huffman_tree_node();
 		newRoot->left = root;
 		newRoot->right = second->root;
+		sz += second->size();
+		//cout<<root->val<<" "<<second->root->val<<" "<<sz<<endl;
 		root = newRoot;
 		delete(second);
 	}
+
+	int size(){
+		return sz;
+	}
+
 
 };
 
@@ -136,7 +151,8 @@ class four_way_heap{
 		arr.push_back(newElem);
 		int idx = arr.size() - 1;
 		while(idx > 3){
-			if (arr[idx].freq < arr[idx/4+2].freq){
+			if (arr[idx].freq < arr[idx/4+2].freq || 
+				(arr[idx].freq == arr[idx/4+2].freq && arr[idx/4+2].tree->size() > arr[idx].tree->size())){
 				swap(arr[idx], arr[idx/4+2]);
 				idx = idx/4 + 2;
 			}
@@ -154,13 +170,15 @@ class four_way_heap{
 		int minChild = 4*(idx - 2);
 		while(minChild < arr.size()){
 			int tmp=minChild;
-			for(int i=1;i<4;i++){
-				if (minChild+i < arr.size() && arr[tmp].freq > arr[minChild+i].freq)
+			for(int i=1;i<4 && minChild+i<arr.size();i++){
+				if (arr[tmp].freq > arr[minChild+i].freq || 
+					(arr[tmp].freq == arr[minChild+i].freq && arr[tmp].tree->size() > arr[minChild+i].tree->size()) )
 					tmp = minChild + i;
 			}
 			minChild = tmp;
 			
-			if (arr[idx].freq > arr[minChild].freq){
+			if (arr[idx].freq > arr[minChild].freq || 
+					(arr[idx].freq == arr[minChild].freq && arr[idx].tree->size() > arr[minChild].tree->size())){
 				swap(arr[idx], arr[minChild]);
 				idx = minChild;
 				minChild = 4*(idx - 2);
@@ -173,10 +191,15 @@ class four_way_heap{
 
 	int size(){
 		return arr.size();
-	}	
+	}
+
 	void delete_heap(){
 		heap_element tmp = get_min();
 		tmp.tree->delete_tree();
+	}
+
+	huffman_tree* getHuffmanTree(){
+		return arr[3].tree;
 	}
 };
 
@@ -253,11 +276,14 @@ public:
 	int size(){
 		return sz;
 	}
+
 	void delete_heap(){
 		root->elem.tree->delete_tree();
 		delete(root);
 		root = NULL;
 	}
+
+
 };
 
 
@@ -292,7 +318,7 @@ void build_tree_using_binary_heap(){
 }
 
 
-void build_tree_using_4way_heap(){
+huffman_tree* build_tree_using_4way_heap(){
 	four_way_heap heap;
 	heap_element elemOne, elemTwo;
 
@@ -315,7 +341,6 @@ void build_tree_using_4way_heap(){
 		elemOne.freq += elemTwo.freq;
 		heap.insert(elemOne);
 	}
-
 	heap.delete_heap();
 }
 
@@ -355,7 +380,6 @@ void build_tree_using_pairing_heap(){
 }
 
 
-
 void display_freq_table(int size){
 	cout<<endl;
 	for(int i=0;i<FREQ_TABLE_SIZE && size > 0;i++){
@@ -367,23 +391,27 @@ void display_freq_table(int size){
 	cout<<endl;
 }
 
+
 int main(){
 	ifstream f;
 	int var;
 	for(int i=0;i<FREQ_TABLE_SIZE;i++)
 		freq_table[i]=0;
-	f.open("/home/abhinav/ADS/Sample2/sample_input_large.txt");
+	f.open("/home/abhinav/ADS/Sample1/sample_input_small.txt");
 	while(f >> var){
 		freq_table[var]++;
 	}
+	f.close();
+	
 	//display_freq_table(10);
+	
 	clock_t start_time;
 	// binary heap
 	start_time = clock();
 	for(int i = 0; i < 10; i++){
 		//run 10 times on given data set
 		//cout<<endl;
-		//build_tree_using_binary_heap();
+		build_tree_using_binary_heap();
 		//cout<<endl;
 	}
 	cout << "Time using binary heap (microsecond): " << (clock() - start_time)/10 << endl;
@@ -391,7 +419,7 @@ int main(){
 	start_time = clock();
 	for(int i = 0; i < 10; i++){
 		//run 10 times on given data set
-		//build_tree_using_4way_heap();
+		build_tree_using_4way_heap();
 	}
 	cout << "Time using 4-way heap (microsecond): " << (clock() - start_time)/10 << endl;
 	// pairing heap
@@ -401,4 +429,5 @@ int main(){
 		build_tree_using_pairing_heap();
 	}
 	cout << "Time using pairing heap (microsecond): " << (clock() - start_time)/10 << endl;
+
 }
