@@ -260,12 +260,15 @@ void encodeText(string str){
 }
 
 
-int main(){
+int main(int argc, char *argv[]){
+	if (argc != 2){
+		return 0;
+	}
 	ifstream f;
 	int var;
 	for(int i=0;i<FREQ_TABLE_SIZE;i++)
 		freq_table[i]=0;
-	f.open("/home/abhinav/ADS/Sample2/sample_input_large.txt");
+	f.open(argv[1]);
 //	f.open("unit_test.txt");
 	while(f >> var){
 		freq_table[var]++;
@@ -284,6 +287,6 @@ int main(){
 		tree->traverse(tree->getRoot(), ch, 0);
 	}
 	//displayCodeTable(10);
-	encodeText("/home/abhinav/ADS/Sample2/sample_input_large.txt");
+	encodeText(argv[1]);
 	return 0;
 }

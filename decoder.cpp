@@ -136,11 +136,11 @@ void display_freq_table(int size){
 }
 
 
-void decodeText(huffman_tree* tree){
+void decodeText(huffman_tree* tree, char* fileName){
 	ifstream f;
 	ofstream o;
 	int len = 0;
-	f.open("encoded.bin", std::ifstream::binary);
+	f.open(fileName, std::ifstream::binary);
 	f.seekg (0, f.end);
     int length = f.tellg();
     f.seekg (0, f.beg);
@@ -169,19 +169,22 @@ void decodeText(huffman_tree* tree){
 }
 
 
-int main(){
+int main(int argc, char *argv[]){
 	
+	if (argc != 3){
+		return 0;
+	}
 	huffman_tree* tree = new huffman_tree();
 	tree->insert_root(new huffman_tree_node());
 	ifstream f;
 	int key;
 	string val;
-	f.open("code_table.txt");
+	f.open(argv[2]);
 	while(f >> key){
 		f >> val;
 		code_table[key] = val;
 		tree->insert(key, val);
 	}
-	decodeText(tree);
+	decodeText(tree, argv[1]);
 	//tree = buildTreeFromCodeTable();
 }
