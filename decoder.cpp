@@ -139,30 +139,35 @@ void display_freq_table(int size){
 void decodeText(huffman_tree* tree, char* fileName){
 	ifstream f;
 	ofstream o;
-	int len = 0;
+	int len;
 	f.open(fileName, std::ifstream::binary);
 	f.seekg (0, f.end);
     int length = f.tellg();
     f.seekg (0, f.beg);
-    //cout<<length<<endl;
-    char * buffer = new char [length];
-	f.read(buffer, length);
+    
+    char * buffer = new char [1000000];
+
 	o.open("decoded.txt");
 	huffman_tree_node* node = tree->getRoot();
 
-	for (int i=0;i<length; i++) {
-		int k = (int)buffer[i];
-		for(int i=0;i<8;i++){
-			if (k&(1<<i))
-				node = node->right;
-			else
-				node = node->left;
-			if (node->left == NULL && node->right == NULL){
-				o << node->val << endl;
-				node = tree->getRoot();
+	for (int j=0; j<length; j += len){
+		f.read(buffer, 1000000);
+		len = f.gcount();
+		for (int i=0; i<len ; i++) {
+			int k = (int)buffer[i];
+			for(int p=0;p<8;p++){
+				if (k&(1<<p))
+					node = node->right;
+				else
+					node = node->left;
+				if (node->left == NULL && node->right == NULL){
+					o << node->val << endl;
+					node = tree->getRoot();
+				}
 			}
-		}
+		}	
 	}
+	
 	//cout<<endl;
 	f.close();
 	o.close();
