@@ -116,8 +116,7 @@ class four_way_heap{
 		arr.push_back(newElem);
 		int idx = arr.size() - 1;
 		while(idx > 3){
-			if (arr[idx].freq < arr[idx/4+2].freq || 
-				(arr[idx].freq == arr[idx/4+2].freq && arr[idx/4+2].tree->size() > arr[idx].tree->size())){
+			if (arr[idx].freq < arr[idx/4+2].freq){
 				swap(arr[idx], arr[idx/4+2]);
 				idx = idx/4 + 2;
 			}
@@ -136,14 +135,12 @@ class four_way_heap{
 		while(minChild < arr.size()){
 			int tmp=minChild;
 			for(int i=1;i<4 && minChild+i<arr.size();i++){
-				if (arr[tmp].freq > arr[minChild+i].freq || 
-					(arr[tmp].freq == arr[minChild+i].freq && arr[tmp].tree->size() > arr[minChild+i].tree->size()) )
+				if (arr[tmp].freq > arr[minChild+i].freq)
 					tmp = minChild + i;
 			}
 			minChild = tmp;
 			
-			if (arr[idx].freq > arr[minChild].freq || 
-					(arr[idx].freq == arr[minChild].freq && arr[idx].tree->size() > arr[minChild].tree->size())){
+			if (arr[idx].freq > arr[minChild].freq){
 				swap(arr[idx], arr[minChild]);
 				idx = minChild;
 				minChild = 4*(idx - 2);
@@ -274,6 +271,9 @@ int main(int argc, char *argv[]){
 		freq_table[var]++;
 	}
 	f.close();
+	clock_t start_time;
+	// binary heap
+	start_time = clock();
 	
 	//display_freq_table(10);
 	huffman_tree* tree = build_tree_using_4way_heap();
@@ -287,6 +287,9 @@ int main(int argc, char *argv[]){
 		tree->traverse(tree->getRoot(), ch, 0);
 	}
 	//displayCodeTable(10);
+	
 	encodeText(argv[1]);
+	cout << "Time using binary heap (microsecond): " << (clock() - start_time) << endl;	
+	
 	return 0;
 }

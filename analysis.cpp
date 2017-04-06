@@ -151,8 +151,7 @@ class four_way_heap{
 		arr.push_back(newElem);
 		int idx = arr.size() - 1;
 		while(idx > 3){
-			if (arr[idx].freq < arr[idx/4+2].freq || 
-				(arr[idx].freq == arr[idx/4+2].freq && arr[idx/4+2].tree->size() > arr[idx].tree->size())){
+			if (arr[idx].freq < arr[idx/4+2].freq){
 				swap(arr[idx], arr[idx/4+2]);
 				idx = idx/4 + 2;
 			}
@@ -171,14 +170,12 @@ class four_way_heap{
 		while(minChild < arr.size()){
 			int tmp=minChild;
 			for(int i=1;i<4 && minChild+i<arr.size();i++){
-				if (arr[tmp].freq > arr[minChild+i].freq || 
-					(arr[tmp].freq == arr[minChild+i].freq && arr[tmp].tree->size() > arr[minChild+i].tree->size()) )
+				if (arr[tmp].freq > arr[minChild+i].freq)
 					tmp = minChild + i;
 			}
 			minChild = tmp;
 			
-			if (arr[idx].freq > arr[minChild].freq || 
-					(arr[idx].freq == arr[minChild].freq && arr[idx].tree->size() > arr[minChild].tree->size())){
+			if (arr[idx].freq > arr[minChild].freq){
 				swap(arr[idx], arr[minChild]);
 				idx = minChild;
 				minChild = 4*(idx - 2);
@@ -397,7 +394,7 @@ int main(){
 	int var;
 	for(int i=0;i<FREQ_TABLE_SIZE;i++)
 		freq_table[i]=0;
-	f.open("/home/abhinav/ADS/Sample1/sample_input_small.txt");
+	f.open("/home/abhinav/ADS/Sample2/sample_input_large.txt");
 	while(f >> var){
 		freq_table[var]++;
 	}

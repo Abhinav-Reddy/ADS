@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<vector>
+#include<stdlib.h>
 using namespace std;
 
 #define FREQ_TABLE_SIZE 1000000
@@ -146,9 +147,11 @@ void decodeText(huffman_tree* tree, char* fileName){
     f.seekg (0, f.beg);
     
     char * buffer = new char [1000000];
-
+    char* s = new char[33];
 	o.open("decoded.txt");
 	huffman_tree_node* node = tree->getRoot();
+
+	string tmpBuffer="";
 
 	for (int j=0; j<length; j += len){
 		f.read(buffer, 1000000);
@@ -161,13 +164,18 @@ void decodeText(huffman_tree* tree, char* fileName){
 				else
 					node = node->left;
 				if (node->left == NULL && node->right == NULL){
-					o << node->val << endl;
+					sprintf(s, "%d\n", node->val);
+					tmpBuffer.append(s);
 					node = tree->getRoot();
+					if (tmpBuffer.length() > 1000000){
+						o << tmpBuffer;
+						tmpBuffer = "";
+					}
 				}
 			}
 		}	
 	}
-	
+	o << tmpBuffer;
 	//cout<<endl;
 	f.close();
 	o.close();
@@ -179,6 +187,10 @@ int main(int argc, char *argv[]){
 	if (argc != 3){
 		return 0;
 	}
+	clock_t start_time;
+	// binary heap
+	start_time = clock();
+	
 	huffman_tree* tree = new huffman_tree();
 	tree->insert_root(new huffman_tree_node());
 	ifstream f;
@@ -191,5 +203,7 @@ int main(int argc, char *argv[]){
 		tree->insert(key, val);
 	}
 	decodeText(tree, argv[1]);
+	cout << "Time using binary heap (microsecond): " << (clock() - start_time) << endl;	
+	
 	//tree = buildTreeFromCodeTable();
 }
